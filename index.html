@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.Conf File Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+            color: #fff;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #serverAliasInputContainer {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #serverAliasInput {
+            width: 70%;
+            margin-right: 10px;
+        }
+
+        #serverAlias {
+            color: green;
+        }
+
+        #template {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            font-weight: bold;
+        }
+        .danger {
+          background-color: #ffdddd;
+         border-left: 6px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>.Conf File Generator</h1>
+    </header>
+
+    <main>
+        <label for="requestNumber">Enter Request Number</label>
+        <input type="text" id="requestNumber" placeholder="Enter Request Number">
+
+        <label for="inputText">Enter Source</label>
+        <textarea id="inputText" placeholder="Enter your source"></textarea>
+
+        <label for="inputString">Enter Destination</label>
+        <textarea id="inputString" placeholder="Enter your destination"></textarea>
+
+        <div id="serverAliasInputContainer">
+            <input type="text" id="serverAliasInput" placeholder="Enter ServerAlias">
+            <div class="danger">
+                <p><strong>If you don’t wanna server alias, just leave the text box empty.</strong></p>
+              </div>
+        </div>
+
+        
+
+        <h2>Result:</h2>
+        <p id="result"></p>
+
+        <h2>Template</h2>
+        <div id="template">&lt;VirtualHost *&gt;<br>
+#Request number <div id="CRQno"></div><br>
+#ServerName is Mandatory - www-test.example.com or myapp-test.merck.com<br>
+ServerName <div id="customText"></div><br>
+#ServerAlias is available for use - example.com or merck.com<br>
+<div id="serverAliasContainer">#ServerAlias<div id="serverAlias"></div></div><br>
+#Replace URL with requestor URL - Redirect / www-test.example.com or Redirect / myapp-test.merck.com<br>
+RewriteEngine on<br>
+RewriteRule ^/ <div id="new_destination"></div> [R=301,NC,NE]<br>
+&lt;/VirtualHost&gt;</div>
+
+        <button onclick="applyText(), getRequestNumber(), getServerAliasInput(), applyText(), modifyString()">Generate .Conf File</button>
+
+        <button onclick="downloadText()">Download .Conf File</button>
+    </main>
+
+    <script>
+          function modifyString() {
+            var inputString = document.getElementById('inputString').value;
+            var modificationOption = "addBackslash";
+            var resultElement = document.getElementById('result');
+            var newDestinationDiv = document.getElementById('new_destination');
+
+            var specialChar = "=,?,@,#,%,&,!$";
+
+            switch (modificationOption) {
+                case 'addBackslash':
+                    var regex = new RegExp('[' + specialChar + ']', 'g');
+                    var modifiedString = inputString.replace(regex, '\\$&');
+                    resultElement.innerText = modifiedString;
+
+                    // Copy the modified string to the new_destination div
+                    newDestinationDiv.innerText = modifiedString;
+                    break;
+                default:
+                    resultElement.innerText = 'Invalid modification option';
+            }
+        }
+
+        function applyText() {
+            // Get the input text
+            var inputText = document.getElementById('inputText').value;
+
+            // Apply the input text to the template
+            var customTextDiv = document.getElementById('customText');
+            customTextDiv.textContent = inputText;
+        }
+
+        function getServerAliasInput() {
+ // Prompt the user for ServerAlias input
+ var serverAliasInput = document.getElementById('serverAliasInput').value;
+
+// Update the #ServerAlias div with the user input and remove the #
+var serverAliasDiv = document.getElementById('serverAlias');
+var serverAliasContainer = document.getElementById('serverAliasContainer');
+
+if (serverAliasInput.trim() !== '') {
+    // ServerAlias is not empty, remove the '#' symbol
+    serverAliasDiv.textContent = serverAliasInput;
+    serverAliasContainer.innerHTML = 'ServerAlias <div id="serverAlias">' + serverAliasInput + '</div>';
+} else {
+    // ServerAlias is empty, keep the '#' symbol
+    serverAliasDiv.textContent = '';
+    serverAliasContainer.innerHTML = '#ServerAlias <div id="serverAlias"></div>';
+}
+
+
+      
+        }
+
+        function getRequestNumber() {
+            // Get the input value
+            var requestNumber = document.getElementById('requestNumber').value;
+
+            // Apply the input value to the template
+            var requestNumberDiv = document.getElementById('CRQno');
+            requestNumberDiv.textContent = requestNumber;
+        }
+
+        function downloadText() {
+            // Get the content of the template with the applied text
+            var templateContent = document.getElementById('template').textContent;
+
+            // Get the input text
+            var inputTextValue = document.getElementById('inputText').value;
+
+            // Create a Blob (binary large object) from the template content
+            var blob = new Blob([templateContent], { type: 'text/plain' });
+
+            // Create a link element
+            var downloadLink = document.createElement('a');
+
+            // Set the download attribute with the filename (using inputText value)
+            downloadLink.download = inputTextValue + '.conf';
+
+            // Create a URL for the Blob and set it as the href attribute of the link
+            downloadLink.href = window.URL.createObjectURL(blob);
+
+            // Append the link to the document
+            document.body.appendChild(downloadLink);
+
+            // Trigger a click event on the link to start the download
+            downloadLink.click();
+
+            // Remove the link from the document
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>
